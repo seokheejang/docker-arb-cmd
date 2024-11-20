@@ -1,5 +1,5 @@
 export const passphrase = 'passphrase';
-export const keystoreDirectory = './keystores';
+export const keystoreDirectory = '/output';
 export const roles: Record<number, string> = {
   5: 'owner-01',
   11: 'sequencer-01',

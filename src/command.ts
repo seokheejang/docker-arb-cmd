@@ -6,11 +6,14 @@ export const genKeystoreFromMnemonicCmd = {
   builder: {
     mnemonic: {
       string: true,
-      default: '',
+      default: null,
       describe: 'mnemonic (see general help)',
     },
   },
   handler: async (argv: any) => {
+    if (argv.mnemonic == null) {
+      console.log(`mnemonic is null, new generating...`);
+    }
     await writeAccounts(argv.mnemonic);
   },
 };

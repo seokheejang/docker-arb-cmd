@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p .",
-    "cmd": "ts-node -r tsconfig-paths/register ./index.ts"
+    "cmd": "ts-node -r tsconfig-paths/register ./index.ts",
+    "d-build": "docker build -t docker-eth-cmd .",
+    "d-start": "docker run --rm docker-eth-cmd"
   },
   "author": "shjang",
   "license": "ISC",
@@ -15,18 +17,19 @@
     "@node-redis/client": "^1.0.4",
     "@openzeppelin/contracts": "^4.9.3",
     "@types/yargs": "^17.0.33",
-    "eslint": "^9.15.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
     "ethers": "^5.7.2",
     "path": "^0.12.7",
-    "prettier": "^3.3.3",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
+    "prettier": "^3.3.3",
+    "eslint": "^9.15.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "@eslint/js": "^9.15.0",
     "globals": "^15.12.0",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "tslint": "^6.1.3",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.15.0"

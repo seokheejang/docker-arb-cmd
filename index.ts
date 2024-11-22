@@ -1,9 +1,10 @@
 import { hideBin } from 'yargs/helpers';
 import Yargs from 'yargs/yargs';
-import { genKeystoreFromMnemonicCmd, writeConfigCmd } from './src/command';
+import { genKeystoreFromMnemonicCmd, writeConfigCmd, printAddressCmd } from './src/command';
 
 async function main() {
-  await Yargs(hideBin(process.argv)).options({}).command(genKeystoreFromMnemonicCmd).command(writeConfigCmd).strict().demandCommand(1, 'a command must be specified').help().argv;
+  await Yargs(hideBin(process.argv)).options({}).command(genKeystoreFromMnemonicCmd).command(writeConfigCmd).command(printAddressCmd).strict().demandCommand(1, 'a command must be specified').help()
+    .argv;
 }
 
 main()

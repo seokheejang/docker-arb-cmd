@@ -10,6 +10,7 @@ import {
   RelayerConfigDir,
   FullnodeConfigDir,
   ArchiveConfigDir,
+  ValidationNodeConfigDir,
   CommonConfig,
   SequencerConfig,
   BatchPosterConfig,
@@ -17,6 +18,7 @@ import {
   RelayerConfig,
   FullnodeConfig,
   ArchiveConfig,
+  ValidationNodeConfig,
 } from '../environment';
 
 /**
@@ -32,9 +34,6 @@ export function writeConfigs(argv: any) {
   }
 
   fs.writeFileSync(ValJWTDir, valJWT);
-
-  // @
-  const valJwtSecret = '/home/volume/' + 'val_jwt.hex';
 
   const commonConfig = {
     chain: {
@@ -225,4 +224,20 @@ export function writeConfigs(argv: any) {
   };
   fs.writeFileSync(ArchiveConfigDir, JSON.stringify(archiveConf));
   console.log('Config written to', ArchiveConfigDir);
+
+  const validationNodeConf = {
+    auth: {
+      addr: ValidationNodeConfig.authAddr,
+      jwtsecret: ValidationNodeConfig.jwtSecret,
+    },
+    persistent: {
+      chain: ValidationNodeConfig.persistentChain,
+    },
+    validation: {
+      'api-auth': ValidationNodeConfig.validationApiAuth,
+      'api-public': ValidationNodeConfig.validationApiPublic,
+    },
+  };
+  fs.writeFileSync(ValidationNodeConfigDir, JSON.stringify(validationNodeConf));
+  console.log('Config written to', ValidationNodeConfigDir);
 }

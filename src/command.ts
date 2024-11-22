@@ -1,4 +1,5 @@
-import { writeAccounts, printAddress, printPrivateKey } from './account/accounts';
+import { writeAccounts, printAddress, printPrivateKey, GetWallet } from './account';
+import { HttpProvider, WebSocketProvider } from './provider';
 import { writeConfigs } from './config/config';
 
 export const writeConfigCmd = {
@@ -85,5 +86,59 @@ export const printAddressCmd = {
       result = 'null';
     }
     console.log(result);
+  },
+};
+
+export const sendNativeCoinCmd = {
+  command: 'send-coin',
+  describe: 'sends funds between l1/l2/l3 accounts',
+  builder: {
+    url: {
+      string: true,
+      describe: 'provider url (l1/l2/l3)',
+    },
+    fromkey: {
+      string: true,
+      describe: 'funnel keystore Or PrivateKey',
+      default: 'funnel',
+    },
+    frompass: {
+      string: true,
+      describe: 'keystore pass',
+      default: 'passphrase',
+    },
+    to: {
+      string: true,
+      describe: 'address',
+      default: 'funnel',
+    },
+    ethamount: {
+      string: true,
+      describe: 'amount to transfer (in eth)',
+      default: '10',
+    },
+    wait: {
+      boolean: true,
+      describe: 'wait for transaction to complete',
+      default: false,
+    },
+    data: { string: true, describe: 'data' },
+  },
+  handler: async (argv: any) => {
+    const { url, fromkey, frompass, wait } = argv;
+
+    const wsProvider = new WebSocketProvider(url);
+    const wallet = await GetWallet(fromkey, frompass);
+    const signer = wallet.connect(wsProvider.getProvider());
+
+    const response = await wsProvider.sendTransaction(signer, argv);
+
+    if (wait) {
+      const receipt = await response.wait();
+      console.log(receipt);
+    }
+    console.log(response);
+
+    await wsProvider.getProvider().destroy();
   },
 };

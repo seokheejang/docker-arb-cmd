@@ -41,7 +41,11 @@ yarn run cmd gen-keystore --mnemonic 'a b c d e f g h i j k l'
 
 yarn run cmd write-config
 
-yarn run cmd print-account --keystore ./output/account/owner-01-0x2Cc92184F2a3aA87A7A1918482c73b12673126B4.key --pass passphrase --type addr | grep -E '^0x' | sed 's/%$//' | tr -d '\r\n'
+yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type addr | grep -E '^0x' | sed 's/%$//' | tr -d '\r\n'
 
-yarn run cmd print-account --keystore ./output/account/owner-01-0x2Cc92184F2a3aA87A7A1918482c73b12673126B4.key --pass passphrase --type pk | grep -E '^0x' | tr -d '\r\n'
+yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type pk | grep -E '^0x' | tr -d '\r\n'
+
+yarn run cmd send-coin --url '${l3url}' --fromkey '${keystore-file}' --frompass passphrase --to '${addr}' --ethamount 0
+
+yarn run cmd send-coin --url '${l3url}' --fromkey '${privatekey}' --frompass passphrase --to '${addr}' --ethamount 0
 ```

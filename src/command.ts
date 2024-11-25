@@ -82,22 +82,22 @@ export const printAddressCmd = {
 };
 
 export const redisInitCmd = {
-  command: 'redis-init',
+  command: 'redis-write',
   describe: 'init redis priorities',
   builder: {
     redisUrl: {
       string: true,
       describe: 'redis url',
-      default: '',
+      default: 'redis://0.0.0.0:6379',
     },
-    seqsUrlList: {
+    seqList: {
       string: true,
-      describe: 'other sequencer url list [max: 3]',
+      describe: 'other sequencer url list (e.g., [ws://172.10.0.1:8548,ws://172.10.0.2:8548,ws://172.10.0.3:8548]',
       default: '',
     },
   },
   handler: async (argv: any) => {
-    await writeRedisPriorities(argv.redisUrl, argv.seqsUrlList);
+    await writeRedisPriorities(argv.redisUrl, argv.seqList);
   },
 };
 
@@ -105,6 +105,11 @@ export const redisReadCmd = {
   command: 'redis-read',
   describe: 'read key',
   builder: {
+    redisUrl: {
+      string: true,
+      describe: 'redis url',
+      default: 'redis://0.0.0.0:6379',
+    },
     key: {
       string: true,
       describe: 'key to read',
@@ -357,9 +362,9 @@ export const bridgeNativeTokenToL3Cmd = {
       describe: 'amount to transfer',
       default: '10',
     },
-    from: {
+    deployer: {
       string: true,
-      describe: 'account (see general help)',
+      describe: 'deployer l3 owner (see general help)',
       default: 'funnel',
     },
     wait: {
@@ -367,12 +372,85 @@ export const bridgeNativeTokenToL3Cmd = {
       describe: 'wait till l3 has balance of amount',
       default: false,
     },
+    deployment: {
+      string: true,
+      describe: 'l3deployment json path',
+      default: 'l3deployment.json',
+    },
   },
   handler: async (argv: any) => {
-    // const deploydata = JSON.parse(fs.readFileSync(path.join(consts.configpath, 'l3deployment.json')).toString());
-    // const inboxAddr = ethers.utils.hexlify(deploydata.inbox);
-    // const nativeTokenAddr = ethers.utils.hexlify(deploydata['native-token']);
-    // argv.ethamount = '0';
-    // await bridgeNativeToken(argv, argv.l2url, argv.l3url, inboxAddr, nativeTokenAddr);
+    const deploydata = JSON.parse(fs.readFileSync(argv.deployment, 'utf8'));
+    const inboxAddr = ethers.utils.hexlify(deploydata.inbox);
+    const nativeTokenAddr = ethers.utils.hexlify(deploydata['native-token']);
+    argv.ethamount = '0';
+    await bridgeNativeToken(argv, argv.l2url, argv.l3url, inboxAddr, nativeTokenAddr);
+  },
+};
+
+async function bridgeNativeToken(argv: any, parentChainUrl: string, chainUrl: string, inboxAddr: string, token: string) {
+  const l2provider = new WebSocketProvider(parentChainUrl);
+
+  const l2wallet = await GetWallet(argv.deployer);
+  const bridgerParentChain = l2wallet.connect(l2provider.getProvider());
+
+  /// approve inbox to use fee token
+  const nativeTokenContract = await getERC20Contract(token, bridgerParentChain);
+
+  await (await nativeTokenContract.approve(inboxAddr, ethers.utils.parseEther(argv.amount))).wait();
+
+  argv.to = inboxAddr;
+  /// deposit fee token
+  const iface = new ethers.utils.Interface(['function depositERC20(uint256 amount)']);
+  argv.data = iface.encodeFunctionData('depositERC20', [ethers.utils.parseEther(argv.amount)]);
+
+  await (await l2provider.sendTransaction(bridgerParentChain, argv)).wait();
+
+  await l2provider.getProvider().destroy();
+
+  if (argv.wait) {
+    const childProvider = new WebSocketProvider(chainUrl);
+    const l3wallet = await GetWallet(argv.deployer);
+    const bridger = l3wallet.connect(childProvider.getProvider());
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    while (true) {
+      const balance = await bridger.getBalance();
+      if (balance.gte(ethers.utils.parseEther(argv.amount))) {
+        return;
+      }
+      await sleep(100);
+    }
+  }
+}
+
+export const transferERC20Command = {
+  command: 'transfer-erc20',
+  describe: 'transfers ERC20 token on L2',
+  builder: {
+    token: {
+      string: true,
+      describe: 'token address',
+    },
+    amount: {
+      string: true,
+      describe: 'amount to transfer',
+    },
+    fromkey: {
+      string: true,
+      describe: 'account (see general help)',
+    },
+    to: {
+      string: true,
+      describe: 'address (see general help)',
+    },
+  },
+  handler: async (argv: any) => {
+    console.log('transfer-erc20');
+    const l2provider = new WebSocketProvider(argv.l2url);
+    const l2wallet = await GetWallet(argv.fromkey);
+    const l2signer = l2wallet.connect(l2provider.getProvider());
+    const tokenContract = await getERC20Contract(argv.token, l2signer);
+    const decimals = await tokenContract.decimals();
+    await (await tokenContract.transfer(argv.to, ethers.utils.parseUnits(argv.amount, decimals))).wait();
+    await l2provider.getProvider().destroy();
   },
 };

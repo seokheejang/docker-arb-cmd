@@ -10,6 +10,8 @@ import {
   depositERC20TokenL1ToL2Cmd,
   getChildErc20AddressL1ToL2Cmd,
   bridgeNativeTokenToL3Cmd,
+  redisInitCmd,
+  redisReadCmd,
 } from './src/command';
 
 async function main() {
@@ -24,6 +26,8 @@ async function main() {
     .command(depositERC20TokenL1ToL2Cmd)
     .command(getChildErc20AddressL1ToL2Cmd)
     .command(bridgeNativeTokenToL3Cmd)
+    .command(redisInitCmd)
+    .command(redisReadCmd)
     .strict()
     .demandCommand(1, 'a command must be specified')
     .help().argv;

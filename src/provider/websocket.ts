@@ -28,6 +28,7 @@ export class WebSocketProvider {
       const txResponse = await signer.sendTransaction({
         to: argv.to,
         value: ethers.utils.parseEther(argv.ethamount),
+        data: argv.data,
       });
       return txResponse;
     } catch (error: any) {

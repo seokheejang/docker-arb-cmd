@@ -502,7 +502,7 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
-"@node-redis/client@^1.0.4":
+"@node-redis/client@^1.0.6":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@node-redis/client/-/client-1.0.6.tgz#de8bfe6cfdc5781f0021ce9d18a11c821c948d9d"
   integrity sha512-SRlHlrz2xAg1o5j9ZdnoF2fA8EZydbXr1mdUv35w0O0NP3XcYt3nQ7WAtmOu13kUa90PhmVoqTDMsTereAETfg==

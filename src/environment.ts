@@ -7,6 +7,7 @@ const configOutputPath = outputPath + '/config';
 const projectRoot = path.resolve(__dirname, '../');
 export const OutputDir = path.join(projectRoot, outputPath);
 export const AccountOutputDir = path.join(projectRoot, accountOutputPath);
+export const L3ChainConfigDir = path.join(projectRoot, configOutputPath, 'l3_chain_info.json');
 export const ValJWTDir = path.join(projectRoot, configOutputPath, 'val_jwt.hex');
 export const CommonConfigDir = path.join(projectRoot, configOutputPath, 'l3common_config.json');
 export const SequencerConfigDir = path.join(projectRoot, configOutputPath, 'l3seq_config.json');
@@ -34,13 +35,19 @@ export const roles: Record<number, string> = {
   34: 'validator-04',
   99: 'funnel',
 };
+///// Contract /////
+export const TOKEN = {
+  name: 'dKargo',
+  symbol: 'DKA',
+  initialSupply: '5000000000',
+};
 
 ///// Domain /////
 
 ///// Config /////
 export const CommonConfig = {
   chainId: '${CommonChainId}', // 12345,
-  chainInfoFile: 'l3chain_info.json',
+  chainInfoFile: 'l3_chain_info.json',
   chainName: '${CommonChainName}', // 'local',
   httpAddr: '0.0.0.0',
   httpApi: ['net', 'web3', 'eth', 'arb'],

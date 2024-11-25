@@ -30,10 +30,6 @@ async function generateKeystore(mnemonic: string) {
   }
 }
 
-function specialAccount(mnemonic: string, index: number): ethers.Wallet {
-  return ethers.Wallet.fromMnemonic(mnemonic, "m/44'/60'/0'/0/" + index);
-}
-
 export async function writeAccounts(mnemonic: string) {
   await generateKeystore(mnemonic);
 }

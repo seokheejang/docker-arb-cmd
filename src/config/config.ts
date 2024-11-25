@@ -3,6 +3,7 @@ import * as path from 'path';
 import {
   ValJWTDir,
   valJWT,
+  L3ChainConfigDir,
   CommonConfigDir,
   SequencerConfigDir,
   BatchPosterConfigDir,
@@ -32,12 +33,52 @@ export function writeConfigs(argv: any) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
-
   fs.writeFileSync(ValJWTDir, valJWT);
 
+  let l3chainId;
+  if (typeof argv.l3chainId === 'string' || typeof argv.l3chainId === 'number') {
+    l3chainId = parseInt(argv.l3chainId, 10);
+  } else {
+    console.log('l3chainId is wrong', l3chainId);
+    return;
+  }
+
+  /// Chain Conifg ///
+  const l3ChainConfig = {
+    chainId: l3chainId,
+    homesteadBlock: 0,
+    daoForkSupport: true,
+    eip150Block: 0,
+    eip150Hash: '0x0000000000000000000000000000000000000000000000000000000000000000',
+    eip155Block: 0,
+    eip158Block: 0,
+    byzantiumBlock: 0,
+    constantinopleBlock: 0,
+    petersburgBlock: 0,
+    istanbulBlock: 0,
+    muirGlacierBlock: 0,
+    berlinBlock: 0,
+    londonBlock: 0,
+    clique: {
+      period: 0,
+      epoch: 0,
+    },
+    arbitrum: {
+      EnableArbOS: true,
+      AllowDebugPrecompiles: true,
+      DataAvailabilityCommittee: false,
+      InitialArbOSVersion: 31,
+      InitialChainOwner: argv.l3owner,
+      GenesisBlockNum: 0,
+    },
+  };
+  const l3ChainConfigJSON = JSON.stringify(l3ChainConfig);
+  fs.writeFileSync(L3ChainConfigDir, l3ChainConfigJSON);
+
+  /// Node Exec Config ///
   const commonConfig = {
     chain: {
-      id: CommonConfig.chainId,
+      id: l3chainId,
       'info-files': [CommonConfig.chainInfoFile],
       name: CommonConfig.chainName,
     },

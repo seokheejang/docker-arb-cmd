@@ -1,0 +1,49 @@
+{
+  "l1Network": {
+    "blockTime": 10,
+    "chainID": 4693,
+    "explorerUrl": "",
+    "isCustom": true,
+    "name": "EthLocal",
+    "partnerChainIDs": [412346],
+    "isArbitrum": false
+  },
+  "l2Network": {
+    "chainID": 412346,
+    "confirmPeriodBlocks": 20,
+    "ethBridge": {
+      "bridge": "0x9E38Ca85aeF4210f8b1E74E15801Da1A8ae67a08",
+      "inbox": "0x49ECd823BD881612B6763E1D212c7Ec8F4a59455",
+      "outbox": "0x4facc68973381b76e32B9057EA3EBA66751B1B42",
+      "rollup": "0x9Fbe19B127ed322fB27BcAF777e3128898485159",
+      "sequencerInbox": "0x967366f2E1c917ddecE3B4C9A16f75bB80f667c3"
+    },
+    "explorerUrl": "",
+    "isArbitrum": true,
+    "isCustom": true,
+    "name": "ArbLocal",
+    "partnerChainID": 4693,
+    "retryableLifetimeSeconds": 604800,
+    "nitroGenesisBlock": 0,
+    "nitroGenesisL1Block": 0,
+    "depositTimeout": 900000,
+    "tokenBridge": {
+      "l1CustomGateway": "0x9Bf5c7820dFcd707C6294664e68A2131f6e37Be4",
+      "l1ERC20Gateway": "0xE5651FE1312df90A76F6d6933519bb142131e243",
+      "l1GatewayRouter": "0xD371b8eF09865A8fcfe409FB8D53be37220CD16d",
+      "l1MultiCall": "0xafB88fbC90A7F98ae2ee6661982edBA4Cb4C89b8",
+      "l1ProxyAdmin": "0x0fa3b7d65Bd26BA7Bb9AAAaF4e850e1A347B15f2",
+      "l1Weth": "0xBb7C5A663Fc515318DC9822FB64CAD28E3D95ED3",
+      "l1WethGateway": "0xf50B91d3b8535452839a48D117DD60C4CB9ACFfD",
+      "l2CustomGateway": "0x9b3c7e99d25Ee17f043AbE460d78eC51ec503D4c",
+      "l2ERC20Gateway": "0x0CE77bD6ED00645E94F998853dD5EAa5B24256D3",
+      "l2GatewayRouter": "0xc2f27923551664b3642942369f03cA515fA02aec",
+      "l2Multicall": "0x94A18425188412E60e27A89512D9e710971593FA",
+      "l2ProxyAdmin": "0x07F8501a6E3EF138178b8a8cF01F1b373cEC5b99",
+      "l2Weth": "0xC4B7E3E0a79DBf6deE04A26C24cebD56D94648B2",
+      "l2WethGateway": "0x13a165126835d0DBA66c434811181E6f2AE15E1F"
+    }
+  },
+  "l1TokenBridgeCreator": "0x5289670d4DEC725D1Dc2C90eDa7e841F20263438",
+  "retryableSender": "0xBe1da64CFd7e0561D55fafB8834F2B292d83b8EB"
+}

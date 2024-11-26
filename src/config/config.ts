@@ -98,11 +98,6 @@ export function writeConfigs(argv: any) {
       staker: {
         enable: CommonConfig.nodeStakerEnable,
       },
-      feed: {
-        output: {
-          port: CommonConfig.nodeFeedOutputPort,
-        },
-      },
     },
     'parent-chain': {
       connection: {
@@ -126,11 +121,13 @@ export function writeConfigs(argv: any) {
     ...commonConfig,
     execution: {
       sequencer: {
+        enable: SequencerConfig.executionSequencerEnable,
         'max-acceptable-timestamp-delta': SequencerConfig.maxAcceptableTimestampDelta,
         'max-tx-data-size': SequencerConfig.maxTxDataSize,
       },
     },
     node: {
+      sequencer: SequencerConfig.nodeSequencer,
       'delayed-sequencer': {
         enable: SequencerConfig.delayedSequencerEnable,
         'finalize-distance': SequencerConfig.delayedSequencerFinalizeDistance,
@@ -138,13 +135,15 @@ export function writeConfigs(argv: any) {
       },
       feed: {
         output: {
-          enable: SequencerConfig.feedOutputEnable,
+          enable: SequencerConfig.nodeFeedOutputEnable,
+          port: SequencerConfig.nodeFeedOutputPort,
         },
       },
       'seq-coordinator': {
         enable: SequencerConfig.seqCoordinatorEnable,
         'my-url': SequencerConfig.seqCoordinatorUrl,
         'redis-url': SequencerConfig.seqCoordinatorRedisUrl,
+        'delete-finalized-msgs': SequencerConfig.seqCoordinatorDeleteFinalizedMsgs,
       },
     },
   };
@@ -217,7 +216,8 @@ export function writeConfigs(argv: any) {
           'secondary-url': RelayerConfig.feedInputSecondaryUrl,
         },
         output: {
-          enable: RelayerConfig.feedOutputEnable,
+          enable: RelayerConfig.nodeFeedOutputEnable,
+          port: RelayerConfig.nodeFeedOutputPort,
         },
       },
     },
@@ -236,7 +236,8 @@ export function writeConfigs(argv: any) {
           url: FullnodeConfig.feedInputUrl,
         },
         output: {
-          enable: FullnodeConfig.feedOutputEnable,
+          enable: FullnodeConfig.nodeFeedOutputEnable,
+          port: FullnodeConfig.nodeFeedOutputPort,
         },
       },
     },
@@ -258,7 +259,8 @@ export function writeConfigs(argv: any) {
           url: ArchiveConfig.feedInputUrl,
         },
         output: {
-          enable: ArchiveConfig.feedOutputEnable,
+          enable: ArchiveConfig.nodeFeedOutputEnable,
+          port: ArchiveConfig.nodeFeedOutputPort,
         },
       },
     },

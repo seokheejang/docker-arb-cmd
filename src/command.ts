@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 import { writeAccounts, printAddress, printPrivateKey, GetWallet } from './account';
 import { HttpProvider, WebSocketProvider } from './provider';
-import { createL1ERC20Contract, getERC20Bridger, getERC20Contract } from './contract';
+import { createL1ERC20Contract, getERC20Bridger, getERC20Contract, getArbOwnerFactory } from './contract';
 import { writeConfigs } from './config/config';
-import { writeRedisPriorities, readRedis } from './redis/redis';
+import { writeRedisPriorities, readRedis, initRedis } from './redis/redis';
 import { ethers } from 'ethers';
 import { formatEther } from 'ethers/lib/utils';
+import { boolean } from 'yargs';
 
 export const writeConfigCmd = {
   command: 'write-config',
@@ -81,7 +82,7 @@ export const printAddressCmd = {
   },
 };
 
-export const redisInitCmd = {
+export const redisWriteCmd = {
   command: 'redis-write',
   describe: 'init redis priorities',
   builder: {
@@ -118,6 +119,30 @@ export const redisReadCmd = {
   },
   handler: async (argv: any) => {
     await readRedis(argv.redisUrl, argv.key);
+  },
+};
+
+export const redisInitCmd = {
+  command: 'redis-init',
+  describe: 'redis init',
+  builder: {
+    redisUrl: {
+      string: true,
+      describe: 'redis url',
+      default: 'redis://0.0.0.0:6379',
+    },
+    init: {
+      boolean: true,
+      describe: 'last check',
+      default: false,
+    },
+  },
+  handler: async (argv: any) => {
+    if (argv.init) {
+      await initRedis(argv.redisUrl);
+    } else {
+      console.log(`no action redis-init: ${argv.init}`);
+    }
   },
 };
 
@@ -357,6 +382,14 @@ export const bridgeNativeTokenToL3Cmd = {
   command: 'bridge-native-token-to-l3',
   describe: 'bridge native token from l2 to l3',
   builder: {
+    l2url: {
+      string: true,
+      describe: 'l2 provider url',
+    },
+    l3url: {
+      string: true,
+      describe: 'l3 provider url',
+    },
     amount: {
       string: true,
       describe: 'amount to transfer',
@@ -422,7 +455,7 @@ async function bridgeNativeToken(argv: any, parentChainUrl: string, chainUrl: st
   }
 }
 
-export const transferERC20Command = {
+export const transferERC20Cmd = {
   command: 'transfer-erc20',
   describe: 'transfers ERC20 token on L2',
   builder: {
@@ -452,5 +485,39 @@ export const transferERC20Command = {
     const decimals = await tokenContract.decimals();
     await (await tokenContract.transfer(argv.to, ethers.utils.parseUnits(argv.amount, decimals))).wait();
     await l2provider.getProvider().destroy();
+  },
+};
+
+export const setL3PricePerUnitByOwner = {
+  command: 'set-l3-price-per-unit-by-owner',
+  describe: '',
+  builder: {
+    l3url: {
+      string: true,
+      describe: 'l3 provider url',
+    },
+    fromkey: {
+      string: true,
+      describe: 'account (see general help)',
+      default: 'l3owner',
+    },
+  },
+  handler: async (argv: any) => {
+    console.log('RUN set-l3-price-per-unit-by-owner');
+    const l3Provider = new WebSocketProvider(argv.l3url);
+    const l3wallet = await GetWallet(argv.fromkey);
+    const l3signer = l3wallet.connect(l3Provider.getProvider());
+    const arbOwner = await getArbOwnerFactory(l3signer);
+
+    console.log(`Execute Transaction for set L1PricePerUnit zero ...`);
+    const setPricePerUnitRes = await arbOwner.setL1PricePerUnit(0, { gasLimit: 50000 });
+    const receipt = await setPricePerUnitRes.wait();
+
+    if (receipt.status == 1) {
+      console.log(`Success Transaction for set L1PricePerUnit zero!! | hash: ${receipt.transactionHash}`);
+    } else {
+      throw new Error(`Fail Transaction for set L1PricePerUnit zero :(`);
+    }
+    await l3Provider.getProvider().destroy();
   },
 };

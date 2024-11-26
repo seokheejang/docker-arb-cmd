@@ -7,7 +7,7 @@ const configOutputPath = outputPath + '/config';
 const projectRoot = path.resolve(__dirname, '../');
 export const OutputDir = path.join(projectRoot, outputPath);
 export const AccountOutputDir = path.join(projectRoot, accountOutputPath);
-export const L3ChainConfigDir = path.join(projectRoot, configOutputPath, 'l3_chain_info.json');
+export const L3ChainConfigDir = path.join(projectRoot, configOutputPath, 'l3_chain_config.json');
 export const ValJWTDir = path.join(projectRoot, configOutputPath, 'val_jwt.hex');
 export const CommonConfigDir = path.join(projectRoot, configOutputPath, 'l3common_config.json');
 export const SequencerConfigDir = path.join(projectRoot, configOutputPath, 'l3seq_config.json');
@@ -47,7 +47,7 @@ export const TOKEN = {
 ///// Config /////
 export const CommonConfig = {
   chainId: '${CommonChainId}', // 12345,
-  chainInfoFile: 'l3_chain_info.json',
+  chainInfoFile: '${CommonChainInfoFile}', // 'l3_chain_info.json',
   chainName: '${CommonChainName}', // 'local',
   httpAddr: '0.0.0.0',
   httpApi: ['net', 'web3', 'eth', 'arb'],
@@ -55,25 +55,28 @@ export const CommonConfig = {
   httpPort: 8547,
   wsAddr: '0.0.0.0',
   wsApi: ['net', 'web3', 'eth', 'arb'],
-  wsPort: 8545,
+  wsPort: 8548,
   nodeStakerEnable: false,
-  nodeFeedOutputPort: 9642,
   parentChainConnectionUrl: '${CommonParentChainConnectionUrl}', // L2 ServiceProvider URL
-  parentChainId: 412346,
+  parentChainId: '${CommonParentChainId}', // 412346,
   persistentChain: '${CommonPersistentChain}', // local',
   validationWasmAllowedWasmModuleRoots: ['/home/user/nitro-legacy/machines', '/home/user/target/machines'],
 };
 
 export const SequencerConfig = {
+  nodeSequencer: true,
+  executionSequencerEnable: true,
   maxAcceptableTimestampDelta: '730h0m0s',
   maxTxDataSize: 85000,
   delayedSequencerEnable: true,
   delayedSequencerFinalizeDistance: 20,
   delayedSequencerUseMergeFinality: true,
-  feedOutputEnable: true,
+  nodeFeedOutputEnable: true,
+  nodeFeedOutputPort: 9642,
   seqCoordinatorEnable: true,
   seqCoordinatorUrl: '${SequencerSeqCoordinatorUrl}',
   seqCoordinatorRedisUrl: '${SequencerSeqCoordinatorRedisUrl}',
+  seqCoordinatorDeleteFinalizedMsgs: '${SequencerSeqCoordinatorDeleteFinalizedMsgs}', // true, Precondition: L1 POS
 };
 
 export const BatchPosterConfig = {
@@ -108,20 +111,23 @@ export const RelayerConfig = {
   secondaryForwardingTarget: '${RelayerSecondaryForwardingTarget.arr}', // ['sub sequencer url (domain)']
   feedInputUrl: '${RelayerFeedInputUrl}', // main sequencer url (domain)
   feedInputSecondaryUrl: '${RelayerFeedInputSecondaryUrl.arr}', // ['sub sequencer url (domain)']
-  feedOutputEnable: true,
+  nodeFeedOutputEnable: true,
+  nodeFeedOutputPort: 9642,
 };
 
 export const FullnodeConfig = {
   forwardingTarget: '${FullnodeForwardingTarget}', //'relayer url (domain)'
   feedInputUrl: '${FullnodeFeedInputUrl}', // 'relayer url (domain)'
-  feedOutputEnable: true,
+  nodeFeedOutputEnable: true,
+  nodeFeedOutputPort: 9642,
 };
 
 export const ArchiveConfig = {
   cachingArchive: true,
   forwardingTarget: '${ArchiveForwardingTarget}', //relayer url (domain)'
   feedInputUrl: '${ArchiveFeedInputUrl}', // relayer url (domain)'
-  feedOutputEnable: true,
+  nodeFeedOutputEnable: true,
+  nodeFeedOutputPort: 9642,
 };
 
 export const ValidationNodeConfig = {

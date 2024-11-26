@@ -64,9 +64,11 @@ docker run --rm --entrypoint sh offchainlabs/nitro-node:v3.2.1-d81324d -c "cat /
 # Redis running
 docker run --name sqm-redis -p 6379:6379 -d redis:6.2.6
 
+yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --init true
+
 yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --key coordinator.priorities
 
-yarn run cmd redis-write --redisUrl redis://0.0.0.0:9379 --seqList '[ws://0.0.0.0:8548]'
+yarn run cmd redis-write --redisUrl redis://0.0.0.0:9379 --seqList 'ws://0.0.0.0:8548'
 
 # get DEPLOYER_PRIVKEY
 yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type pk | grep -E '^0x' | tr -d '\r\n'
@@ -76,4 +78,60 @@ yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --typ
 yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type addr | grep -E '^0x' | tr -d '\r\n'
 # get WASM_MODULE_ROOT
 docker run --rm --entrypoint sh offchainlabs/nitro-node:v3.2.1-d81324d -c "cat /home/user/target/machines/latest/module-root.txt"
+
+docker run --rm \
+  -e PARENT_CHAIN_RPC=http://${l2url} \
+  -e DEPLOYER_PRIVKEY=${l3owner-deployer} \
+  -e PARENT_CHAIN_ID=${l2chainid} \
+  -e CHILD_CHAIN_NAME=local \
+  -e MAX_DATA_SIZE=117964 \
+  -e OWNER_ADDRESS=${l3owner-deployer-address} \
+  -e WASM_MODULE_ROOT=${nitro-wasm-module-root} \
+  -e SEQUENCER_ADDRESS=${l3sequncer-address} \
+  -e AUTHORIZE_VALIDATORS=4 \
+  -e CHILD_CHAIN_CONFIG_PATH="/data/config/l3_chain_config.json" \
+  -e CHAIN_DEPLOYMENT_INFO="/data/config/l3deployment.json" \
+  -e CHILD_CHAIN_INFO="/data/config/deployed_l3_chain_info.json" \
+  -e FEE_TOKEN_ADDRESS=${l2feetoken-address} \
+  -v "$(pwd)/output/config:/data/config" \
+  ${nitro-contracts-rollup-docker-image} create-rollup-testnode
+
+# l3 sequnecer up
+docker run \
+  --name test-l3-seq \
+  -p "0.0.0.0:10547:10547" \
+  -p "0.0.0.0:10548:10548" \
+  -p "0.0.0.0:10742:10742" \
+  -v "$(pwd)/output/config:/data/config" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3seq_config.json
+
+# bridge-native-token-to-l3
+yarn run cmd bridge-native-token-to-l3 --l2url '${l2url}' --l3url '${l3url}' --amount 500 --deployer '${l3owner}' --wait --deployment output/config/l3deployment.json
+
+# get ROLLUP_ADDRESS
+jq -r '.[0].rollup.rollup' output/config/deployed_l3_chain_info.json
+
+# L2-L3 token bridge
+docker volume create token-bridge-workspace
+
+docker run --rm \
+  -e ROLLUP_OWNER_KEY=${deployer_key} \
+  -e ROLLUP_ADDRESS=${ROLLUP_ADDRESS} \
+  -e PARENT_RPC=${http-l2url} \
+  -e CHILD_RPC=${http-l3url} \
+  -e PARENT_KEY=${deployer_key} \
+  -e CHILD_KEY=${deployer_key} \
+  -v "token-bridge-workspace:/workspace" \
+  ${nitro-contracts-tokenbrigde-docker-image} deploy:local:token-bridge
+
+docker run --rm \
+  -v "token-bridge-workspace:/tokenbridge" \
+  -v "$(pwd)/output/config:/data/config" \
+  --entrypoint sh ${nitro-contracts-tokenbrigde-docker-image} \
+  -c "cat /tokenbridge/network.json && cp /tokenbridge/network.json /data/config/l2l3_network.json"
+
+# Optional
+docker volume rm token-bridge-workspace
+
 ```

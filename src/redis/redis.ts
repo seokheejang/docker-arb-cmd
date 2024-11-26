@@ -19,3 +19,17 @@ export async function writeRedisPriorities(redisUrl: string, seqsUrlList: string
   await redis.set('coordinator.priorities', priostring);
   await getAndPrint(redis, 'coordinator.priorities');
 }
+
+export async function initRedis(redisUrl: string) {
+  const redis = createClient({ url: redisUrl });
+  await redis.connect();
+
+  const keys = await redis.keys('*');
+  if (keys.length > 0) {
+    await redis.del(keys);
+    console.log('All keys have been deleted and Redis is initialized.');
+  } else {
+    console.log('No keys found in Redis. It is already initialized.');
+  }
+  await redis.disconnect();
+}

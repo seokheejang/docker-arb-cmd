@@ -9,6 +9,10 @@ async function generateKeystore(mnemonic: string) {
 
   if (!mnemonic) {
     const defaultKeystorePath = path.resolve(AccountOutputDir, `new-mnemonic.txt`);
+    const dir = path.dirname(defaultKeystorePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(defaultKeystorePath, key);
     console.log(`New Mnemonic saved at ${defaultKeystorePath}`);
   }
@@ -18,7 +22,6 @@ async function generateKeystore(mnemonic: string) {
     const wallet = ethers.Wallet.fromMnemonic(key, "m/44'/60'/0'/0/" + index);
 
     const keystorePath = path.resolve(AccountOutputDir, `${role}-${wallet.address}.key`);
-
     const dir = path.dirname(keystorePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });

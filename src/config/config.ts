@@ -218,6 +218,8 @@ export function writeConfigs(argv: any) {
         },
         'redis-url': ValidatorConfig.nodeStakerRedisUrl,
         'staker-interval': ValidatorConfig.nodeStakerInterval,
+        'use-smart-contract-wallet': ValidatorConfig.nodeStakerUseSmartContractWallet,
+        dangerous: { 'without-block-validator': ValidatorConfig.nodeStakerDangerousWithoutBlockValidator },
       },
     },
   };
@@ -231,6 +233,9 @@ export function writeConfigs(argv: any) {
       'secondary-forwarding-target': RelayerConfig.executionSecondaryForwardingTarget,
     },
     node: {
+      staker: {
+        enable: RelayerConfig.nodeStakerEnable,
+      },
       feed: {
         input: {
           url: RelayerConfig.nodeFeedInputUrl,
@@ -252,6 +257,9 @@ export function writeConfigs(argv: any) {
       'forwarding-target': FullnodeConfig.executionForwardingTarget,
     },
     node: {
+      staker: {
+        enable: FullnodeConfig.nodeStakerEnable,
+      },
       feed: {
         input: {
           url: FullnodeConfig.nodeFeedInputUrl,
@@ -275,6 +283,9 @@ export function writeConfigs(argv: any) {
       'forwarding-target': ArchiveConfig.executionForwardingTarget,
     },
     node: {
+      staker: {
+        enable: ArchiveConfig.nodeStakerEnable,
+      },
       feed: {
         input: {
           url: ArchiveConfig.nodeFeedInputUrl,

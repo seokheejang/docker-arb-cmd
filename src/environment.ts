@@ -113,11 +113,14 @@ export const ValidatorConfig = {
   nodeStakerParentChainWalletPathname: '${ValidatorStakerParentChainWalletPathname}', // 'keystore (volume path)',
   nodeStakerRedisUrl: '${ValidatorStakerRedisUrl}', // 'redis url (domain)',
   nodeStakerInterval: '1m0s',
+  nodeStakerUseSmartContractWallet: true,
+  nodeStakerDangerousWithoutBlockValidator: false,
 };
 
 export const RelayerConfig = {
   executionForwardingTarget: '${RelayerForwardingTarget}', // main sequencer url (domain)
   executionSecondaryForwardingTarget: ['${RelayerSecondaryForwardingTarget.arr}'], // ['sub sequencer url (domain)']
+  nodeStakerEnable: false,
   nodeFeedInputUrl: '${RelayerFeedInputUrl}', // main sequencer url (domain)
   nodeFeedInputSecondaryUrl: ['${RelayerFeedInputSecondaryUrl.arr}'], // ['sub sequencer url (domain)']
   nodeFeedOutputEnable: true,
@@ -126,6 +129,7 @@ export const RelayerConfig = {
 
 export const FullnodeConfig = {
   executionForwardingTarget: '${FullnodeForwardingTarget}', //'relayer url (domain)'
+  nodeStakerEnable: false,
   nodeFeedInputUrl: '${FullnodeFeedInputUrl}', // 'relayer url (domain)'
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
@@ -134,6 +138,7 @@ export const FullnodeConfig = {
 export const ArchiveConfig = {
   executionCachingArchive: true,
   executionForwardingTarget: '${ArchiveForwardingTarget}', //relayer url (domain)'
+  nodeStakerEnable: false,
   nodeFeedInputUrl: '${ArchiveFeedInputUrl}', // relayer url (domain)'
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,

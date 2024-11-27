@@ -68,14 +68,17 @@ yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --init true
 
 yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --key coordinator.priorities
 
-yarn run cmd redis-write --redisUrl redis://0.0.0.0:9379 --seqList 'ws://0.0.0.0:8548'
+yarn run cmd redis-write --redisUrl redis://0.0.0.0:9379 --seqList 'ws://0.0.0.0:18548'
 
 # get DEPLOYER_PRIVKEY
 yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type pk | grep -E '^0x' | tr -d '\r\n'
 # get OWNER_ADDRESS
 yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type addr | grep -E '^0x' | tr -d '\r\n'
 # get BATCH_POSTERS
-yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type addr | grep -E '^0x' | tr -d '\r\n'
+yarn run cmd print-account --keystore '${keystore-file-1}' --pass passphrase --type addr | grep -E '^0x'
+yarn run cmd print-account --keystore '${keystore-file-2}' --pass passphrase --type addr | grep -E '^0x'
+yarn run cmd print-account --keystore '${keystore-file-3}' --pass passphrase --type addr | grep -E '^0x'
+yarn run cmd print-account --keystore '${keystore-file-4}' --pass passphrase --type addr | grep -E '^0x'
 # get WASM_MODULE_ROOT
 docker run --rm --entrypoint sh offchainlabs/nitro-node:v3.2.1-d81324d -c "cat /home/user/target/machines/latest/module-root.txt"
 
@@ -230,4 +233,68 @@ docker run -d \
 # l2 funnel(min send eth: 1) -> validator(l2 account)
 yarn run cmd send-coin --url '${l2url}' --fromkey '${l2-funnel-pk}' --to '${validator-addr}' --ethamount 2
 
+# relayer config set
+sed -i \
+    -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
+    -e 's/\${CommonChainName}/local/g' \
+    -e 's/\${RelayerFeedInputUrl}/ws:\/\/host.docker.internal:19642/g' \
+    -e 's/\"\${RelayerFeedInputSecondaryUrl.arr}\"/${seq-feed-list}/g' \
+    -e 's/\${CommonParentChainConnectionUrl}/ws:\/\/3.38.138.216:8548/g' \
+    -e 's/\${CommonParentChainId}/412346/g' \
+    -e 's/\${CommonPersistentChain}/local/g' \
+    -e 's/\${RelayerForwardingTarget}/ws:\/\/host.docker.internal:18548/g' \
+    -e 's/\"\${RelayerSecondaryForwardingTarget.arr}\"/${seq-ws-list}/g' \
+    output/config/l3relay_config.json
+
+# relayer docker run
+docker run -d \
+  --name test-l3-relay \
+  -p "0.0.0.0:48547:8547" \
+  -p "0.0.0.0:48548:8548" \
+  -p "0.0.0.0:49642:9642" \
+  -v "$(pwd)/output/config:/data/config" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3relay_config.json
+
+# fullnode config set
+sed -i \
+    -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
+    -e 's/\${CommonChainName}/local/g' \
+    -e 's/\${FullnodeFeedInputUrl}/ws:\/\/host.docker.internal:49642/g' \
+    -e 's/\${CommonParentChainConnectionUrl}/${l2url}/g' \
+    -e 's/\${CommonParentChainId}/412346/g' \
+    -e 's/\${CommonPersistentChain}/local/g' \
+    -e 's/\${FullnodeForwardingTarget}/ws:\/\/host.docker.internal:48548/g' \
+    output/config/l3full_config.json
+
+# fullnode docker run
+docker run -d \
+  --name test-l3-full \
+  -p "0.0.0.0:58547:8547" \
+  -p "0.0.0.0:58548:8548" \
+  -p "0.0.0.0:59642:9642" \
+  -v "$(pwd)/output/config:/data/config" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3full_config.json
+
+# archive config set
+sed -i \
+    -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
+    -e 's/\${CommonChainName}/local/g' \
+    -e 's/\${ArchiveFeedInputUrl}/ws:\/\/host.docker.internal:49642/g' \
+    -e 's/\${CommonParentChainConnectionUrl}/${l2url}/g' \
+    -e 's/\${CommonParentChainId}/412346/g' \
+    -e 's/\${CommonPersistentChain}/local/g' \
+    -e 's/\${ArchiveForwardingTarget}/ws:\/\/host.docker.internal:48548/g' \
+    output/config/l3archive_config.json
+
+# archive docker run
+docker run -d \
+  --name test-l3-archive \
+  -p "0.0.0.0:60547:8547" \
+  -p "0.0.0.0:60548:8548" \
+  -p "0.0.0.0:60642:9642" \
+  -v "$(pwd)/output/config:/data/config" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3archive_config.json
 ```

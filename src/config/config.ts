@@ -122,16 +122,19 @@ export function writeConfigs(argv: any) {
     execution: {
       sequencer: {
         enable: SequencerConfig.executionSequencerEnable,
-        'max-acceptable-timestamp-delta': SequencerConfig.maxAcceptableTimestampDelta,
-        'max-tx-data-size': SequencerConfig.maxTxDataSize,
+        'max-acceptable-timestamp-delta': SequencerConfig.executionSequencerMaxAcceptableTimestampDelta,
+        'max-tx-data-size': SequencerConfig.executionSequencerMaxTxDataSize,
       },
     },
     node: {
+      staker: {
+        enable: SequencerConfig.nodeStakerEnable,
+      },
       sequencer: SequencerConfig.nodeSequencer,
       'delayed-sequencer': {
-        enable: SequencerConfig.delayedSequencerEnable,
-        'finalize-distance': SequencerConfig.delayedSequencerFinalizeDistance,
-        'use-merge-finality': SequencerConfig.delayedSequencerUseMergeFinality,
+        enable: SequencerConfig.nodeDelayedSequencerEnable,
+        'finalize-distance': SequencerConfig.nodeDelayedSequencerFinalizeDistance,
+        'use-merge-finality': SequencerConfig.nodeDelayedSequencerUseMergeFinality,
       },
       feed: {
         output: {
@@ -140,10 +143,10 @@ export function writeConfigs(argv: any) {
         },
       },
       'seq-coordinator': {
-        enable: SequencerConfig.seqCoordinatorEnable,
-        'my-url': SequencerConfig.seqCoordinatorUrl,
-        'redis-url': SequencerConfig.seqCoordinatorRedisUrl,
-        'delete-finalized-msgs': SequencerConfig.seqCoordinatorDeleteFinalizedMsgs,
+        enable: SequencerConfig.nodeSeqCoordinatorEnable,
+        'my-url': SequencerConfig.nodeSeqCoordinatorMyUrl,
+        'redis-url': SequencerConfig.nodeSeqCoordinatorRedisUrl,
+        'delete-finalized-msgs': SequencerConfig.nodeSeqCoordinatorDeleteFinalizedMsgs,
       },
     },
   };
@@ -152,24 +155,36 @@ export function writeConfigs(argv: any) {
 
   const batchPosterConf = {
     ...commonConfig,
+    execution: {
+      sequencer: {
+        enable: BatchPosterConfig.executionSequencerEnable,
+      },
+      'forwarding-target': BatchPosterConfig.executionForwardingTarget,
+    },
     node: {
-      batchPoster: {
-        enable: BatchPosterConfig.batchPosterEnable,
+      staker: { enable: BatchPosterConfig.nodeStakerEnable },
+      'batch-poster': {
+        enable: BatchPosterConfig.nodeBatchPosterEnable,
         'data-poster': {
           'redis-signer': {
-            'signing-key': BatchPosterConfig.redisSignerKey,
+            'signing-key': BatchPosterConfig.nodeBatchPosterRedisSignerSigningKey,
           },
-          'wait-for-l1-finality': BatchPosterConfig.waitForL1Finality,
+          'wait-for-l1-finality': BatchPosterConfig.nodeBatchPosterWaitForL1Finality,
         },
-        'l1-block-bound': BatchPosterConfig.l1BlockBound,
-        'max-delay': BatchPosterConfig.maxDelay,
-        'max-size': BatchPosterConfig.maxSize,
+        'l1-block-bound': BatchPosterConfig.nodeBatchPosterL1BlockBound,
+        'max-delay': BatchPosterConfig.nodeBatchPosterMaxDelay,
+        'max-size': BatchPosterConfig.nodeBatchPosterMaxSize,
         'parent-chain-wallet': {
-          account: BatchPosterConfig.parentChainWalletAccount,
-          password: BatchPosterConfig.parentChainWalletPassword,
-          pathname: BatchPosterConfig.parentChainWalletPathname,
+          account: BatchPosterConfig.nodeBatchPosterParentChainWalletAccount,
+          password: BatchPosterConfig.nodeBatchPosterParentChainWalletPassword,
+          pathname: BatchPosterConfig.nodeBatchPosterParentChainWalletPathname,
         },
-        'redis-url': BatchPosterConfig.redisUrl,
+        'redis-url': BatchPosterConfig.nodeBatchPosterRedisUrl,
+      },
+      'seq-coordinator': {
+        enable: BatchPosterConfig.nodeSeqCoordinatorEnable,
+        'my-url': BatchPosterConfig.nodeSeqCoordinatorMyUrl,
+        'redis-url': BatchPosterConfig.nodeSeqCoordinatorRedisUrl,
       },
     },
   };
@@ -180,23 +195,23 @@ export function writeConfigs(argv: any) {
     ...commonConfig,
     node: {
       'block-validator': {
-        enable: ValidatorConfig.blockValidatorEnable,
+        enable: ValidatorConfig.nodeBlockValidatorEnable,
         'validation-server': {
-          jwtsecret: ValidatorConfig.validationServerJwtSecret,
-          url: ValidatorConfig.validationServerUrl,
+          jwtsecret: ValidatorConfig.nodeBlockValidatorValidationServerJwtSecret,
+          url: ValidatorConfig.nodeBlockValidatorValidationServerUrl,
         },
       },
       staker: {
-        enable: ValidatorConfig.stakerEnable,
-        strategy: ValidatorConfig.stakerStrategy,
-        'make-assertion-interval': ValidatorConfig.makeAssertionInterval,
+        enable: ValidatorConfig.nodeStakerEnable,
+        strategy: ValidatorConfig.nodeStakerStrategy,
+        'make-assertion-interval': ValidatorConfig.nodeStakerMakeAssertionInterval,
         'parent-chain-wallet': {
-          account: ValidatorConfig.stakerParentChainWalletAccount,
-          password: ValidatorConfig.stakerParentChainWalletPassword,
-          pathname: ValidatorConfig.stakerParentChainWalletPathname,
+          account: ValidatorConfig.nodeStakerParentChainWalletAccount,
+          password: ValidatorConfig.nodeStakerParentChainWalletPassword,
+          pathname: ValidatorConfig.nodeStakerParentChainWalletPathname,
         },
-        'redis-url': ValidatorConfig.stakerRedisUrl,
-        'staker-interval': ValidatorConfig.stakerInterval,
+        'redis-url': ValidatorConfig.nodeStakerRedisUrl,
+        'staker-interval': ValidatorConfig.nodeStakerInterval,
       },
     },
   };
@@ -206,14 +221,14 @@ export function writeConfigs(argv: any) {
   const relayerConf = {
     ...commonConfig,
     execution: {
-      'forwarding-target': RelayerConfig.forwardingTarget,
-      'secondary-forwarding-target': RelayerConfig.secondaryForwardingTarget,
+      'forwarding-target': RelayerConfig.executionForwardingTarget,
+      'secondary-forwarding-target': RelayerConfig.executionSecondaryForwardingTarget,
     },
     node: {
       feed: {
         input: {
-          url: RelayerConfig.feedInputUrl,
-          'secondary-url': RelayerConfig.feedInputSecondaryUrl,
+          url: RelayerConfig.nodeFeedInputUrl,
+          'secondary-url': RelayerConfig.nodeFeedInputSecondaryUrl,
         },
         output: {
           enable: RelayerConfig.nodeFeedOutputEnable,
@@ -228,12 +243,12 @@ export function writeConfigs(argv: any) {
   const fullnodeConf = {
     ...commonConfig,
     execution: {
-      'forwarding-target': FullnodeConfig.forwardingTarget,
+      'forwarding-target': FullnodeConfig.executionForwardingTarget,
     },
     node: {
       feed: {
         input: {
-          url: FullnodeConfig.feedInputUrl,
+          url: FullnodeConfig.nodeFeedInputUrl,
         },
         output: {
           enable: FullnodeConfig.nodeFeedOutputEnable,
@@ -249,14 +264,14 @@ export function writeConfigs(argv: any) {
     ...commonConfig,
     execution: {
       caching: {
-        archive: ArchiveConfig.cachingArchive,
+        archive: ArchiveConfig.executionCachingArchive,
       },
-      'forwarding-target': ArchiveConfig.forwardingTarget,
+      'forwarding-target': ArchiveConfig.executionForwardingTarget,
     },
     node: {
       feed: {
         input: {
-          url: ArchiveConfig.feedInputUrl,
+          url: ArchiveConfig.nodeFeedInputUrl,
         },
         output: {
           enable: ArchiveConfig.nodeFeedOutputEnable,
@@ -271,7 +286,7 @@ export function writeConfigs(argv: any) {
   const validationNodeConf = {
     auth: {
       addr: ValidationNodeConfig.authAddr,
-      jwtsecret: ValidationNodeConfig.jwtSecret,
+      jwtsecret: ValidationNodeConfig.authJwtSecret,
     },
     persistent: {
       chain: ValidationNodeConfig.persistentChain,

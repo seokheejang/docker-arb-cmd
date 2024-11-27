@@ -172,7 +172,7 @@ export const sendNativeCoinCmd = {
     ethamount: {
       string: true,
       describe: 'amount to transfer (in eth)',
-      default: '10',
+      default: '0',
     },
     wait: {
       boolean: true,

@@ -46,7 +46,7 @@ export const TOKEN = {
 
 ///// Config /////
 export const CommonConfig = {
-  chainId: '${CommonChainId}', // 12345,
+  chainId: '', // input: write-config --l3chainId
   chainInfoFile: '${CommonChainInfoFile}', // 'l3_chain_info.json',
   chainName: '${CommonChainName}', // 'local',
   httpAddr: '0.0.0.0',
@@ -65,75 +65,82 @@ export const CommonConfig = {
 
 export const SequencerConfig = {
   nodeSequencer: true,
-  executionSequencerEnable: true,
-  maxAcceptableTimestampDelta: '730h0m0s',
-  maxTxDataSize: 85000,
-  delayedSequencerEnable: true,
-  delayedSequencerFinalizeDistance: 20,
-  delayedSequencerUseMergeFinality: true,
+  nodeStakerEnable: false,
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
-  seqCoordinatorEnable: true,
-  seqCoordinatorUrl: '${SequencerSeqCoordinatorUrl}',
-  seqCoordinatorRedisUrl: '${SequencerSeqCoordinatorRedisUrl}',
-  seqCoordinatorDeleteFinalizedMsgs: '${SequencerSeqCoordinatorDeleteFinalizedMsgs}', // true, Precondition: L1 POS
+  nodeDelayedSequencerEnable: true,
+  nodeDelayedSequencerFinalizeDistance: 20,
+  nodeDelayedSequencerUseMergeFinality: '${SequencerDelayedSequencerUseMergeFinality}',
+  nodeSeqCoordinatorEnable: true,
+  nodeSeqCoordinatorMyUrl: '${SequencerSeqCoordinatorUrl}',
+  nodeSeqCoordinatorRedisUrl: '${SequencerSeqCoordinatorRedisUrl}',
+  nodeSeqCoordinatorDeleteFinalizedMsgs: '${SequencerSeqCoordinatorDeleteFinalizedMsgs}', // true, Precondition: L1 POS
+  executionSequencerEnable: true,
+  executionSequencerMaxAcceptableTimestampDelta: '730h0m0s',
+  executionSequencerMaxTxDataSize: 85000,
 };
 
 export const BatchPosterConfig = {
-  batchPosterEnable: true,
-  redisSignerKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-  waitForL1Finality: true,
-  l1BlockBound: 'ignore',
-  maxDelay: '30s',
-  maxSize: 90000,
-  parentChainWalletAccount: '${BatchPosterParentChainWalletAccount}', //'address',
-  parentChainWalletPassword: '${BatchPosterParentChainWalletPassword}', //'pass',
-  parentChainWalletPathname: '${BatchPosterParentChainWalletPathname}', // 'keystore (volume path)',
-  redisUrl: '${BatchPosterRedisUrl}', // 'redis url (domain)',
+  executionSequencerEnable: false,
+  executionForwardingTarget: 'null',
+  nodeStakerEnable: false,
+  nodeBatchPosterEnable: true,
+  nodeBatchPosterRedisSignerSigningKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+  nodeBatchPosterWaitForL1Finality: '${BatchPosterWaitForL1Finality}',
+  nodeBatchPosterL1BlockBound: 'ignore',
+  nodeBatchPosterMaxDelay: '${BatchPosterNodeBatchPosterMaxDelay}', // '30s'
+  nodeBatchPosterMaxSize: '${BatchPosterNodeBatchPosterMaxSize}', // 85000
+  nodeBatchPosterParentChainWalletAccount: '${BatchPosterParentChainWalletAccount}', //'address',
+  nodeBatchPosterParentChainWalletPassword: '${BatchPosterParentChainWalletPassword}', //'pass',
+  nodeBatchPosterParentChainWalletPathname: '${BatchPosterParentChainWalletPathname}', // 'keystore (volume path)',
+  nodeBatchPosterRedisUrl: '${BatchPosterRedisUrl}', // 'redis url (domain)',
+  nodeSeqCoordinatorEnable: true,
+  nodeSeqCoordinatorMyUrl: '${BatchPosterSeqCoordinatorUrl}', // ''
+  nodeSeqCoordinatorRedisUrl: '${BatchPosterRedisUrl}', // 'redis url (domain)',
 };
 
 export const ValidatorConfig = {
-  blockValidatorEnable: false,
-  validationServerJwtSecret: '${ValidatorValidationServerJwtSecret}', // 'val_jwt.hex (volume path)',
-  validationServerUrl: '${ValidatorValidationServerUrl}', // 'validator_node url',
-  stakerEnable: true,
-  stakerStrategy: 'MakeNodes',
-  makeAssertionInterval: '10s',
-  stakerParentChainWalletAccount: '${ValidatorStakerParentChainWalletAccount}', // 'address',
-  stakerParentChainWalletPassword: '${ValidatorStakerParentChainWalletPassword}', // 'pass',
-  stakerParentChainWalletPathname: '${ValidatorStakerParentChainWalletPathname}', // 'keystore (volume path)',
-  stakerRedisUrl: '${ValidatorStakerRedisUrl}', // 'redis url (domain)',
-  stakerInterval: '1m0s',
+  nodeBlockValidatorEnable: false,
+  nodeBlockValidatorValidationServerJwtSecret: '${ValidatorValidationServerJwtSecret}', // 'val_jwt.hex (volume path)',
+  nodeBlockValidatorValidationServerUrl: '${ValidatorValidationServerUrl}', // 'validator_node url',
+  nodeStakerEnable: true,
+  nodeStakerStrategy: 'MakeNodes',
+  nodeStakerMakeAssertionInterval: '10s',
+  nodeStakerParentChainWalletAccount: '${ValidatorStakerParentChainWalletAccount}', // 'address',
+  nodeStakerParentChainWalletPassword: '${ValidatorStakerParentChainWalletPassword}', // 'pass',
+  nodeStakerParentChainWalletPathname: '${ValidatorStakerParentChainWalletPathname}', // 'keystore (volume path)',
+  nodeStakerRedisUrl: '${ValidatorStakerRedisUrl}', // 'redis url (domain)',
+  nodeStakerInterval: '1m0s',
 };
 
 export const RelayerConfig = {
-  forwardingTarget: '${RelayerForwardingTarget}', // main sequencer url (domain)
-  secondaryForwardingTarget: '${RelayerSecondaryForwardingTarget.arr}', // ['sub sequencer url (domain)']
-  feedInputUrl: '${RelayerFeedInputUrl}', // main sequencer url (domain)
-  feedInputSecondaryUrl: '${RelayerFeedInputSecondaryUrl.arr}', // ['sub sequencer url (domain)']
+  executionForwardingTarget: '${RelayerForwardingTarget}', // main sequencer url (domain)
+  executionSecondaryForwardingTarget: ['${RelayerSecondaryForwardingTarget.arr}'], // ['sub sequencer url (domain)']
+  nodeFeedInputUrl: '${RelayerFeedInputUrl}', // main sequencer url (domain)
+  nodeFeedInputSecondaryUrl: ['${RelayerFeedInputSecondaryUrl.arr}'], // ['sub sequencer url (domain)']
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
 };
 
 export const FullnodeConfig = {
-  forwardingTarget: '${FullnodeForwardingTarget}', //'relayer url (domain)'
-  feedInputUrl: '${FullnodeFeedInputUrl}', // 'relayer url (domain)'
+  executionForwardingTarget: '${FullnodeForwardingTarget}', //'relayer url (domain)'
+  nodeFeedInputUrl: '${FullnodeFeedInputUrl}', // 'relayer url (domain)'
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
 };
 
 export const ArchiveConfig = {
-  cachingArchive: true,
-  forwardingTarget: '${ArchiveForwardingTarget}', //relayer url (domain)'
-  feedInputUrl: '${ArchiveFeedInputUrl}', // relayer url (domain)'
+  executionCachingArchive: true,
+  executionForwardingTarget: '${ArchiveForwardingTarget}', //relayer url (domain)'
+  nodeFeedInputUrl: '${ArchiveFeedInputUrl}', // relayer url (domain)'
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
 };
 
 export const ValidationNodeConfig = {
   authAddr: '0.0.0.0',
-  jwtSecret: '${ValidationNodeJwtSecret}', // val_jwt.hex',
-  persistentChain: 'local',
+  authJwtSecret: '${ValidationNodeJwtSecret}', // val_jwt.hex',
+  persistentChain: '${ValidationNodePersistentChain}', // local',
   validationApiAuth: true,
   validationApiPublic: false,
 };

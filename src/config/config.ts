@@ -193,6 +193,12 @@ export function writeConfigs(argv: any) {
 
   const validatorConf = {
     ...commonConfig,
+    execution: {
+      sequencer: {
+        enable: ValidatorConfig.executionSequencerEnable,
+      },
+      'forwarding-target': ValidatorConfig.executionForwardingTarget,
+    },
     node: {
       'block-validator': {
         enable: ValidatorConfig.nodeBlockValidatorEnable,

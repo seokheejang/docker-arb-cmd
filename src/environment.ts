@@ -100,7 +100,9 @@ export const BatchPosterConfig = {
 };
 
 export const ValidatorConfig = {
-  nodeBlockValidatorEnable: false,
+  executionSequencerEnable: false,
+  executionForwardingTarget: 'null',
+  nodeBlockValidatorEnable: true,
   nodeBlockValidatorValidationServerJwtSecret: '${ValidatorValidationServerJwtSecret}', // 'val_jwt.hex (volume path)',
   nodeBlockValidatorValidationServerUrl: '${ValidatorValidationServerUrl}', // 'validator_node url',
   nodeStakerEnable: true,

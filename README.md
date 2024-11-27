@@ -117,9 +117,9 @@ sed -i \
 # l3 sequnecer up
 docker run \
   --name test-l3-seq \
-  -p "0.0.0.0:18547:18547" \
-  -p "0.0.0.0:18548:18548" \
-  -p "0.0.0.0:19642:19642" \
+  -p "0.0.0.0:18547:8547" \
+  -p "0.0.0.0:18548:8548" \
+  -p "0.0.0.0:19642:9642" \
   -v "$(pwd)/output/config:/data/config" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
   --conf.file=/data/config/l3seq_config.json
@@ -175,8 +175,8 @@ sed -i \
 # batch-poster docker run
 docker run -d \
   --name test-l3-bp \
-  -p "0.0.0.0:28547:28547" \
-  -p "0.0.0.0:28548:28548" \
+  -p "0.0.0.0:28547:8547" \
+  -p "0.0.0.0:28548:8548" \
   -v "$(pwd)/output/config:/data/config" \
   -v "$(pwd)/output/account:/data/account" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
@@ -186,5 +186,48 @@ docker run -d \
 yarn run cmd send-coin --url '${l2url}' --fromkey '${funnel-pk}' --to '${batch-poster-address}' --ethamount 1
 # send tx rollup test
 yarn run cmd send-coin --url '${l3url}' --fromkey '${deployer-pk}' --to '${deployer-address}' --ethamount 0
+
+# validation-node config set
+sed -i \
+    -e 's/\${ValidationNodeJwtSecret}/\/data\/config\/val_jwt.hex/g' \
+    -e 's/\${ValidationNodePersistentChain}/local/g' \
+    output/config/l3vn_config.json
+
+# validation-node docker run
+docker run -d \
+  --name test-l3-vn \
+  -p "0.0.0.0:18549:8549" \
+  -v "$(pwd)/output/config:/data/config" \
+  --entrypoint /usr/local/bin/nitro-val \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3vn_config.json
+
+# validator config set
+sed -i \
+    -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
+    -e 's/\${CommonChainName}/local/g' \
+    -e 's/\${ValidatorValidationServerJwtSecret}/\/data\/config\/val_jwt.hex/g' \
+    -e 's/\${ValidatorValidationServerUrl}/ws:\/\/host.docker.internal:18549/g' \
+    -e 's/\${ValidatorStakerParentChainWalletAccount}/${validator-addr}/g' \
+    -e 's/\${ValidatorStakerParentChainWalletPassword}/passphrase/g' \
+    -e 's/\${ValidatorStakerParentChainWalletPathname}/\/data\/account/g' \
+    -e 's/\${ValidatorStakerRedisUrl}/redis:\/\/host.docker.internal:9379/g' \
+    -e 's/\${CommonParentChainConnectionUrl}/${l2url}/g' \
+    -e 's/\${CommonParentChainId}/412346/g' \
+    -e 's/\${CommonPersistentChain}/local/g' \
+    output/config/l3val_config.json
+
+# validator docker run
+docker run -d \
+  --name test-l3-val \
+  -p "0.0.0.0:38547:8547" \
+  -p "0.0.0.0:38548:8548" \
+  -v "$(pwd)/output/config:/data/config" \
+  -v "$(pwd)/output/account:/data/account" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3val_config.json
+
+# l2 funnel(min send eth: 1) -> validator(l2 account)
+yarn run cmd send-coin --url '${l2url}' --fromkey '${l2-funnel-pk}' --to '${validator-addr}' --ethamount 2
 
 ```

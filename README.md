@@ -211,6 +211,7 @@ sed -i \
     -e 's/\${CommonChainName}/local/g' \
     -e 's/\${ValidatorValidationServerJwtSecret}/\/data\/config\/val_jwt.hex/g' \
     -e 's/\${ValidatorValidationServerUrl}/ws:\/\/host.docker.internal:18549/g' \
+    -e 's/\${ValidatorStakerMakeAssertionInterval}/1h0m0s/g' \
     -e 's/\${ValidatorStakerParentChainWalletAccount}/${validator-addr}/g' \
     -e 's/\${ValidatorStakerParentChainWalletPassword}/passphrase/g' \
     -e 's/\${ValidatorStakerParentChainWalletPathname}/\/data\/account/g' \

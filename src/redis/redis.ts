@@ -9,6 +9,8 @@ export async function readRedis(redisUrl: string, key: string) {
   const redis = createClient({ url: redisUrl });
   await redis.connect();
   await getAndPrint(redis, key);
+
+  await redis.disconnect();
 }
 
 export async function writeRedisPriorities(redisUrl: string, seqsUrlList: string) {
@@ -18,6 +20,8 @@ export async function writeRedisPriorities(redisUrl: string, seqsUrlList: string
   await redis.connect();
   await redis.set('coordinator.priorities', priostring);
   await getAndPrint(redis, 'coordinator.priorities');
+
+  await redis.disconnect();
 }
 
 export async function initRedis(redisUrl: string) {

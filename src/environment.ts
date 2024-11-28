@@ -24,7 +24,7 @@ export const valJWT = `0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991
 export const passphrase = 'passphrase';
 export const roles: Record<number, string> = {
   5: 'owner-01',
-  11: 'sequencer-01',
+  // 11: 'sequencer-01',
   21: 'batch-poster-01',
   22: 'batch-poster-02',
   23: 'batch-poster-03',
@@ -107,7 +107,7 @@ export const ValidatorConfig = {
   nodeBlockValidatorValidationServerUrl: '${ValidatorValidationServerUrl}', // 'validator_node url',
   nodeStakerEnable: true,
   nodeStakerStrategy: 'MakeNodes',
-  nodeStakerMakeAssertionInterval: '10s',
+  nodeStakerMakeAssertionInterval: '${ValidatorStakerMakeAssertionInterval}',
   nodeStakerParentChainWalletAccount: '${ValidatorStakerParentChainWalletAccount}', // 'address',
   nodeStakerParentChainWalletPassword: '${ValidatorStakerParentChainWalletPassword}', // 'pass',
   nodeStakerParentChainWalletPathname: '${ValidatorStakerParentChainWalletPathname}', // 'keystore (volume path)',
@@ -142,6 +142,7 @@ export const ArchiveConfig = {
   nodeFeedInputUrl: '${ArchiveFeedInputUrl}', // relayer url (domain)'
   nodeFeedOutputEnable: true,
   nodeFeedOutputPort: 9642,
+  wsApi: ['net', 'web3', 'eth', 'arb', 'debug'],
 };
 
 export const ValidationNodeConfig = {

@@ -297,6 +297,8 @@ export function writeConfigs(argv: any) {
       },
     },
   };
+  archiveConf.ws.api = ArchiveConfig.wsApi;
+
   fs.writeFileSync(ArchiveConfigDir, JSON.stringify(archiveConf));
   console.log('Config written to', ArchiveConfigDir);
 

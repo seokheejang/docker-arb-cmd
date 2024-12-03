@@ -251,10 +251,15 @@ export const approveERC20TokenForBridgeCmd = {
       describe: 'account (see general help)',
       default: 'l3owner',
     },
+    mode: {
+      string: true,
+      describe: 'chain mode (e.g. sepolia)',
+      default: 'custom',
+    },
     network: {
       string: true,
       describe: 'network json path',
-      default: 'l1l2_network.json',
+      default: null,
     },
   },
   handler: async (argv: any) => {
@@ -263,9 +268,10 @@ export const approveERC20TokenForBridgeCmd = {
     const l1wallet = await GetWallet(argv.deployer);
     const l1signer = l1wallet.connect(l1provider.getProvider());
     const tokenAddr = argv.token;
-    const l1l2tokenbridge = JSON.parse(fs.readFileSync(argv.network, 'utf8'));
+    const l1l2tokenbridge = argv.network ? JSON.parse(fs.readFileSync(argv.network, 'utf8')) : null;
+    const l2Network = l1l2tokenbridge?.l2Network ?? null;
     // map v3 -> v4
-    const erc20Bridger = await getERC20Bridger(l1l2tokenbridge.l2Network, l2provider.getProvider());
+    const erc20Bridger = await getERC20Bridger(argv.mode, l2Network, l2provider.getProvider());
     const approveTx = await erc20Bridger.approveToken({
       erc20ParentAddress: tokenAddr,
       parentSigner: l1signer,
@@ -302,10 +308,15 @@ export const depositERC20TokenL1ToL2Cmd = {
       describe: 'amount to transfer',
       default: '10',
     },
+    mode: {
+      string: true,
+      describe: 'chain mode (e.g. sepolia)',
+      default: 'custom',
+    },
     network: {
       string: true,
       describe: 'network json path',
-      default: 'l1l2_network.json',
+      default: null,
     },
   },
   handler: async (argv: any) => {
@@ -316,13 +327,15 @@ export const depositERC20TokenL1ToL2Cmd = {
     const l2wallet = await GetWallet(argv.deployer);
     const l2signer = l2wallet.connect(l2provider.getProvider());
     const tokenAddr = argv.token;
-    const l1l2tokenbridge = JSON.parse(fs.readFileSync(argv.network, 'utf8'));
+
+    const l1l2tokenbridge = argv.network ? JSON.parse(fs.readFileSync(argv.network, 'utf8')) : null;
+    const l2Network = l1l2tokenbridge?.l2Network ?? null;
+    // map v3 -> v4
+    const erc20Bridger = await getERC20Bridger(argv.mode, l2Network, l2provider.getProvider());
 
     const tokenContract = await getERC20Contract(argv.token, l1signer);
     const decimals = await tokenContract.decimals();
     const symbolL1 = await tokenContract.symbol();
-
-    const erc20Bridger = await getERC20Bridger(l1l2tokenbridge.l2Network, l2provider.getProvider());
 
     const amount = ethers.utils.parseUnits(argv.amount, decimals);
     const depositTx = await erc20Bridger.deposit({
@@ -337,6 +350,7 @@ export const depositERC20TokenL1ToL2Cmd = {
     await depositRec.waitForChildTransactionReceipt(l2provider.getProvider());
     console.log('L2 Deposit Message successful');
     const childErc20Address = await erc20Bridger.getChildErc20Address(tokenAddr, l1provider.getProvider());
+    console.log('childErc20Address:', childErc20Address);
     const L2tokenContract = await getERC20Contract(childErc20Address, l2signer);
     const totalSupply = await L2tokenContract.totalSupply();
     const symbol = await L2tokenContract.symbol();
@@ -360,19 +374,25 @@ export const getChildErc20AddressL1ToL2Cmd = {
       string: true,
       describe: 'token address',
     },
+    mode: {
+      string: true,
+      describe: 'chain mode (e.g. sepolia)',
+      default: 'custom',
+    },
     network: {
       string: true,
       describe: 'network json path',
-      default: 'l1l2_network.json',
+      default: null,
     },
   },
   handler: async (argv: any) => {
     const l1provider = new WebSocketProvider(argv.l1url);
     const l2provider = new WebSocketProvider(argv.l2url);
     const tokenAddr = argv.token;
-    const l1l2tokenbridge = JSON.parse(fs.readFileSync(argv.network, 'utf8'));
+    const l1l2tokenbridge = argv.network ? JSON.parse(fs.readFileSync(argv.network, 'utf8')) : null;
+    const l2Network = l1l2tokenbridge?.l2Network ?? null;
     // map v3 -> v4
-    const erc20Bridger = await getERC20Bridger(l1l2tokenbridge.l2Network, l2provider.getProvider());
+    const erc20Bridger = await getERC20Bridger(argv.mode, l2Network, l2provider.getProvider());
     const childErc20Address = await erc20Bridger.getChildErc20Address(tokenAddr, l1provider.getProvider());
     console.log(`${childErc20Address}`);
   },

@@ -2,10 +2,12 @@ import { Erc20Bridger, getArbitrumNetwork, mapL2NetworkToArbitrumNetwork, regist
 import { ArbOwner__factory } from '@arbitrum/sdk/dist/lib/abi/factories/ArbOwner__factory';
 import { Contract, ethers } from 'ethers';
 
-export const getERC20Bridger = async (l2Network: any, l2provider: any): Promise<any> => {
-  const result = mapL2NetworkToArbitrumNetwork(l2Network);
+export const getERC20Bridger = async (mode: string, l2Network: any, l2provider: any): Promise<any> => {
+  if (mode == 'custom') {
+    const result = mapL2NetworkToArbitrumNetwork(l2Network);
+    registerCustomArbitrumNetwork(result);
+  }
   // register network
-  registerCustomArbitrumNetwork(result);
   const resl2Network = await getArbitrumNetwork(l2provider);
   const erc20Bridger = new Erc20Bridger(resl2Network);
   return erc20Bridger;

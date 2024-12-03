@@ -9,9 +9,6 @@
     "d-build": "docker build -t docker-eth-cmd .",
     "d-start": "docker run --rm docker-eth-cmd"
   },
-  "engines": {
-    "node": "18.19.0"
-  },
   "author": "shjang",
   "license": "ISC",
   "dependencies": {

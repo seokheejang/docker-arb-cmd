@@ -62,13 +62,13 @@ yarn run cmd print-ChildERC20-l1-to-l2 --l1url '${l1url}' --l2url '${l2url}' --t
 docker run --rm --entrypoint sh offchainlabs/nitro-node:v3.2.1-d81324d -c "cat /home/user/target/machines/latest/module-root.txt"
 
 # Redis running
-docker run --name sqm-redis -p 6379:6379 -d redis:6.2.6
+docker run --name sqm-redis -p 19379:6379 -d redis:6.2.6
 
-yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --init true
+yarn run cmd redis-read --redisUrl redis://0.0.0.0:19379 --init true
 
-yarn run cmd redis-read --redisUrl redis://0.0.0.0:9379 --key coordinator.priorities
+yarn run cmd redis-read --redisUrl redis://0.0.0.0:19379 --key coordinator.priorities
 
-yarn run cmd redis-write --redisUrl redis://0.0.0.0:9379 --seqList 'ws://0.0.0.0:18548'
+yarn run cmd redis-write --redisUrl redis://0.0.0.0:19379 --seqList 'ws://0.0.0.0:10858'
 
 # get DEPLOYER_PRIVKEY
 yarn run cmd print-account --keystore '${keystore-file}' --pass passphrase --type pk | grep -E '^0x' | tr -d '\r\n'
@@ -95,37 +95,48 @@ docker run --rm \
   -e CHILD_CHAIN_CONFIG_PATH="/data/config/l3_chain_config.json" \
   -e CHAIN_DEPLOYMENT_INFO="/data/config/l3deployment.json" \
   -e CHILD_CHAIN_INFO="/data/config/deployed_l3_chain_info.json" \
-  -e FEE_TOKEN_ADDRESS=${l2feetoken-address} \
+  -e FEE_TOKEN_ADDRESS=${l2fee-token-address} \
   -v "$(pwd)/output/config:/data/config" \
   ${nitro-contracts-rollup-docker-image} create-rollup-testnode
+
+cp output/config/deployed_l3_chain_info.json output/config/l3_chain_info.json
 
 # sequnecer config set
 # If using macOS, install GNU sed using the following command:
 brew install gnu-sed
 alias sed='gsed'
 
-sed -i \
+sed \
     -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
     -e 's/\${CommonChainName}/local/g' \
-    -e 's/\${SequencerSeqCoordinatorUrl}/ws:\/\/host.docker.internal:10548/g' \
-    -e 's/\${SequencerSeqCoordinatorRedisUrl}/redis:\/\/host.docker.internal:9379/g' \
+    -e 's/\${SequencerSeqCoordinatorUrl}/ws:\/\/host.docker.internal:10857/g' \
+    -e 's/\${SequencerSeqCoordinatorRedisUrl}/redis:\/\/host.docker.internal:19379/g' \
     -e 's/\${SequencerSeqCoordinatorDeleteFinalizedMsgs}/false/g' \
     -e 's/\${SequencerDelayedSequencerUseMergeFinality}/false/g' \
     -e 's/\${CommonParentChainConnectionUrl}/ws:\/\/127.0.0.1:8548/g' \
     -e 's/\${CommonParentChainId}/412346/g' \
     -e 's/\${CommonPersistentChain}/local/g' \
-    output/config/l3seq_config.json
-
+    output/config/l3seq_config.json > output/config/l3seq_config_1.json
 
 # l3 sequnecer up
-docker run \
-  --name test-l3-seq \
-  -p "0.0.0.0:18547:8547" \
-  -p "0.0.0.0:18548:8548" \
-  -p "0.0.0.0:19642:9642" \
-  -v "$(pwd)/output/config:/data/config" \
+docker run -d \
+  --name seq-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -p "19642:9642" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
-  --conf.file=/data/config/l3seq_config.json
+  --conf.file=/data/config/l3seq_config_1.json
+
+# option check
+docker run --rm \
+  --name seq-dump \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
+  offchainlabs/nitro-node:v3.2.1-d81324d \
+  --conf.file=/data/config/l3seq_config_1.json --conf.dump
 
 # set-l3-price-per-unit-by-owner
 yarn run cmd set-l3-price-per-unit-by-owner --l3url '${l3url}' --fromkey '${deployer}'
@@ -159,7 +170,7 @@ docker run --rm \
 docker volume rm token-bridge-workspace
 
 # batch-poster config set
-sed -i \
+sed \
     -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
     -e 's/\${CommonChainName}/local/g' \
     -e 's/\${BatchPosterNodeBatchPosterMaxDelay}/30s/g' \
@@ -168,22 +179,24 @@ sed -i \
     -e 's/\${BatchPosterParentChainWalletAccount}/${batch-poster-address}/g' \
     -e 's/\${BatchPosterParentChainWalletPassword}/passphrase/g' \
     -e 's/\${BatchPosterParentChainWalletPathname}/\/data\/account/g' \
-    -e 's/\${BatchPosterRedisUrl}/redis:\/\/host.docker.internal:9379/g' \
+    -e 's/\${BatchPosterRedisUrl}/redis:\/\/host.docker.internal:19379/g' \
     -e 's/\${BatchPosterSeqCoordinatorUrl}/''/g' \
     -e 's/\${CommonParentChainConnectionUrl}/${ws-l2url}/g' \
     -e 's/\${CommonParentChainId}/412346/g' \
     -e 's/\${CommonPersistentChain}/local/g' \
-    output/config/l3bp_config.json
+    output/config/l3bp_config.json > output/config/l3bp_config_1.json
 
 # batch-poster docker run
 docker run -d \
-  --name test-l3-bp \
-  -p "0.0.0.0:28547:8547" \
-  -p "0.0.0.0:28548:8548" \
-  -v "$(pwd)/output/config:/data/config" \
-  -v "$(pwd)/output/account:/data/account" \
+  --name bp-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/output/account:/data/account" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
-  --conf.file=/data/config/l3bp_config.json
+  --conf.file=/data/config/l3bp_config_1.json
 
 # l2 funnel -> batch-poster(l2 account)
 yarn run cmd send-coin --url '${l2url}' --fromkey '${funnel-pk}' --to '${batch-poster-address}' --ethamount 1
@@ -198,15 +211,15 @@ sed -i \
 
 # validation-node docker run
 docker run -d \
-  --name test-l3-vn \
-  -p "0.0.0.0:18549:8549" \
-  -v "$(pwd)/output/config:/data/config" \
+  --name vn-01 \
+  -p "18549:8549" \
+  -v "/apps/output/config:/data/config" \
   --entrypoint /usr/local/bin/nitro-val \
   offchainlabs/nitro-node:v3.2.1-d81324d \
   --conf.file=/data/config/l3vn_config.json
 
 # validator config set
-sed -i \
+sed \
     -e 's/\${CommonChainInfoFile}/\/data\/config\/l3_chain_info.json/g' \
     -e 's/\${CommonChainName}/local/g' \
     -e 's/\${ValidatorValidationServerJwtSecret}/\/data\/config\/val_jwt.hex/g' \
@@ -219,17 +232,19 @@ sed -i \
     -e 's/\${CommonParentChainConnectionUrl}/${l2url}/g' \
     -e 's/\${CommonParentChainId}/412346/g' \
     -e 's/\${CommonPersistentChain}/local/g' \
-    output/config/l3val_config.json
+    output/config/l3val_config.json > output/config/l3val_config_1.json
 
 # validator docker run
 docker run -d \
-  --name test-l3-val \
-  -p "0.0.0.0:38547:8547" \
-  -p "0.0.0.0:38548:8548" \
-  -v "$(pwd)/output/config:/data/config" \
-  -v "$(pwd)/output/account:/data/account" \
+  --name val-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/output/account:/data/account" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
-  --conf.file=/data/config/l3val_config.json
+  --conf.file=/data/config/l3val_config_1.json
 
 # l2 funnel(min send eth: 1) -> validator(l2 account)
 yarn run cmd send-coin --url '${l2url}' --fromkey '${l2-funnel-pk}' --to '${validator-addr}' --ethamount 2
@@ -243,17 +258,19 @@ sed -i \
     -e 's/\${CommonParentChainConnectionUrl}/ws:\/\/3.38.138.216:8548/g' \
     -e 's/\${CommonParentChainId}/412346/g' \
     -e 's/\${CommonPersistentChain}/local/g' \
-    -e 's/\${RelayerForwardingTarget}/ws:\/\/host.docker.internal:18548/g' \
+    -e 's/\${RelayerForwardingTarget}/ws:\/\/host.docker.internal:10548/g' \
     -e 's/\"\${RelayerSecondaryForwardingTarget.arr}\"/${seq-ws-list}/g' \
     output/config/l3relay_config.json
 
 # relayer docker run
 docker run -d \
-  --name test-l3-relay \
-  -p "0.0.0.0:48547:8547" \
-  -p "0.0.0.0:48548:8548" \
-  -p "0.0.0.0:49642:9642" \
-  -v "$(pwd)/output/config:/data/config" \
+  --name relay-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -p "19642:9642" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
   --conf.file=/data/config/l3relay_config.json
 
@@ -270,11 +287,13 @@ sed -i \
 
 # fullnode docker run
 docker run -d \
-  --name test-l3-full \
-  -p "0.0.0.0:58547:8547" \
-  -p "0.0.0.0:58548:8548" \
-  -p "0.0.0.0:59642:9642" \
-  -v "$(pwd)/output/config:/data/config" \
+  --name it-dev-full-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -p "19642:9642" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
   --conf.file=/data/config/l3full_config.json
 
@@ -291,11 +310,13 @@ sed -i \
 
 # archive docker run
 docker run -d \
-  --name test-l3-archive \
-  -p "0.0.0.0:60547:8547" \
-  -p "0.0.0.0:60548:8548" \
-  -p "0.0.0.0:60642:9642" \
-  -v "$(pwd)/output/config:/data/config" \
+  --name it-dev-archive-01 \
+  -p "10857:8547" \
+  -p "10858:8548" \
+  -p "19642:9642" \
+  -v "/apps/output/config:/data/config" \
+  -v "/apps/nitro/data:/home/user/.arbitrum/itdev/nitro" \
+  -v "/apps/nitro/keystore:/home/user/.arbitrum/itdev/keystore" \
   offchainlabs/nitro-node:v3.2.1-d81324d \
   --conf.file=/data/config/l3archive_config.json
 ```
